@@ -130,18 +130,21 @@ function App() {
 
   const tileGapSize = 0.1 // fixed
 
-  const [tileSize, setTileSize] = useState(10); // 초기값을 10으로 설정
+  //          variable: level이 변경될 때마다 타일의 크기를 변경하기 위함          //
+  const tileSize = useMemo(() => {
+    return (gameWidth - tileGapSize * (stages[level].N + 1)) / stages[level].N;
+  }, [level, stages, gameWidth, tileGapSize]);
 
   //          state: 타일에 에니메이션을 넣기 위해 각 타일의 표시 상태를 나타내는 state          //
   const [tileDisplay, setTileDisplay] = useState([]); // 각 타일의 표시 상태를 관리
 
-  //          effect: level이 변경될 떄마다 답을 변경함          //
-  //          effect: level이 변경될 때마다 타일의 크기를 변경하기 위함          //
-  //          effect: level이 변경될 때마다 모든 타일 상태를 검은색으로 설정          //
+  //          effect: level이 변경될 떄마다 실행되는 함수          //
   useEffect(() => {
     setAnswer(findPath(stages[level].N, stages[level].M, stages[level].L));
-    setTileSize((gameWidth - tileGapSize * (stages[level].N + 1)) / stages[level].N);
     setTileDisplay(Array(stages[level].N).fill().map(() => Array(stages[level].M).fill('tile-black')));
+
+    setStartColor(getRandomColor());
+    setEndColor(getRandomColor());
   }, [level, stages]);
 
 
@@ -208,12 +211,15 @@ function App() {
     const status = new Map();
     return status;
   });
+  
+  
 
   //          function: START 버튼을 클릭한 경우 핸들러          //
   const startButtonOnclickHandler = () => {
     setGameState('tile-visible')
     setLevel(1);
     setLife(5);
+    setLastDraggedTile(null);
     setTileStatus(() => {
       const status = new Map();
       return status;
@@ -224,8 +230,17 @@ function App() {
 
   }
 
+  //          state: 상태로 마지막 드래그된 타일의 위치를 저장          //
+  const [lastDraggedTile, setLastDraggedTile] = useState(null);
+
   //          function: 타일을 클릭한 경우 핸들러          //
   const onTileClickHandler = (x, y) => {
+
+    // 동일타일 클릭시 리턴
+    if (lastDraggedTile !== null && x === lastDraggedTile[0] && y === lastDraggedTile[1]) {
+      console.log('중복타일클릭');
+      return;
+    }
 
     // 게임 규칙상 불가능한 곳을 클릭한 경우
     if (currentTileStep === 0) {
@@ -245,10 +260,12 @@ function App() {
       setTileStatus(prev => new Map(prev).set(currentKey, 'correct'));
   
       setCurrentTileStep(currentTileStep + 1);
+      setLastDraggedTile([x, y]);
 
       // 모든 타일을 맞췄다면
       if (currentTileStep + 1 === stages[level].L) {
         setTimeout(() => { // 1초 대기 후 실행
+          setLastDraggedTile(null);
           setLevel(level + 1); // 다음 레벨로 업데이트
           setCurrentTileStep(0); // 타일 스텝 초기화
           setGameState('tile-visible'); // 게임 상태를 'tile-visible'로 설정
@@ -256,7 +273,6 @@ function App() {
         }, 1000); // 1초 대기
       }
     } else {
-      console.log("Incorrect tile clicked");
       setTileStatus(prev => new Map(prev).set(currentKey, 'wrong'));
       setLife(prev => prev - 1); // 생명 감소
       if (life > 1) {
@@ -269,23 +285,21 @@ function App() {
   };
 
 
-  //          state: 드래그를 전역적으로 처리하기 위한 state          //
+  //          state: 드래그 및 터치를 전역적으로 처리하기 위한 state          //
   useEffect(() => {
-
-    setStartColor(getRandomColor());
-    setEndColor(getRandomColor());
-
     // 마우스를 뗄 때 호출할 함수
     const handleMouseUpGlobal = () => {
       setIsDragging(false);
     };
-  
+
     // 전역 이벤트 리스너 등록
     window.addEventListener('mouseup', handleMouseUpGlobal);
+    window.addEventListener('touchend', handleMouseUpGlobal);
 
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
       window.removeEventListener('mouseup', handleMouseUpGlobal);
+      window.removeEventListener('touchend', handleMouseUpGlobal);
     };
   }, []);
   
@@ -304,11 +318,53 @@ function App() {
     setIsDragging(false);
   };
 
+  //          function: 드래그를 처리하기 위한 함수 - 마우스가 버튼 위에 있는 경우          //
   const onMouseEnterHandler = (x, y) => {
     if (isDragging) {
       onTileClickHandler(x, y);
     }
   };
+
+  // 타일 인덱스를 계산하는 함수
+  const calculateTileIndex = (touchX, touchY, tileSize, gameOffset) => {
+    const xIndex = Math.floor((touchX - gameOffset.left) / tileSize);
+    const yIndex = Math.floor((touchY - gameOffset.top) / tileSize);
+    return { x: xIndex, y: yIndex };
+  };
+
+
+
+  //          function: 터치한 후 움직인 경우 처리함수          //
+  const onTouchMoveHandler = (e) => {
+    e.preventDefault(); // 스크롤 방지
+    if (isDragging) {
+      const touch = e.touches[0];
+      const tileSize = gameWidth / stages[level].N; // or any other way you calculate tile size
+      const gameBox = document.querySelector('.game-box').getBoundingClientRect(); // Get the position of the game container
+  
+      const { x, y } = calculateTileIndex(touch.clientX, touch.clientY, tileSize, gameBox);
+      console.log(`Moving to tile at x: ${x}, y: ${y}`); // Debug to ensure correct coordinates
+      onTileClickHandler(x, y);
+    }
+  };
+  
+  const onTouchStartHandler = (e) => {
+    e.preventDefault(); // 기본 터치 이벤트 방지 (스크롤 등)
+    const touch = e.touches[0];
+    const tileSize = gameWidth / stages[level].N;
+    const gameBox = document.querySelector('.game-box').getBoundingClientRect();
+  
+    const { x, y } = calculateTileIndex(touch.clientX, touch.clientY, tileSize, gameBox);
+    console.log(`Starting touch at x: ${x}, y: ${y}`); // Debugging start position
+    setIsDragging(true);
+    onTileClickHandler(x, y);
+  };
+  
+  const onTouchEndHandler = () => {
+    setIsDragging(false);
+  };
+
+
 
 
   //          function: 리트라이 버튼 클릭 핸들러          //
@@ -348,7 +404,7 @@ function App() {
     <div className="App">
       <div className='title-box'>
         <div className='title' onClick={onTitleClickHandler}>
-          Memory Of Stair
+          Stair of Memory
         </div>
       </div>
       <div>
@@ -387,9 +443,6 @@ function App() {
                       <button
                         className={tileClass}
                         style={{width: `${tileSize}vmin`, height: `${tileSize}vmin`, gap: `${tileGapSize}vmin`}}
-                        onMouseDown={() => onMouseDownHandler(x, y)}
-                        onMouseUp={onMouseUpHandler}
-                        onMouseEnter={() => onMouseEnterHandler(x, y)}
                         key={`button-${x}-${y}`}
                       />
                     ))}
@@ -428,7 +481,6 @@ function App() {
                             tileClass = 'tile';
                             break;
                         }
-                
                         return (
                           <button
                             className={tileClass}
@@ -436,6 +488,9 @@ function App() {
                             onMouseDown={() => onMouseDownHandler(x, y)}
                             onMouseUp={onMouseUpHandler}
                             onMouseEnter={() => onMouseEnterHandler(x, y)}
+                            onTouchStart={(e) => onTouchStartHandler(e)}
+                            onTouchMove={(e) => onTouchMoveHandler(e)}
+                            onTouchEnd={onTouchEndHandler}
                             key={`button-${x}-${y}`}
                           />
                         );
@@ -460,6 +515,11 @@ function App() {
             }
 
           </div>
+        </div>
+      </div>
+      <div className='tail'>
+        <div className='developer'>
+          dev. 0woo
         </div>
       </div>
     </div>

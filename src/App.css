@@ -88,6 +88,7 @@
 .tile-black {
   background-color: black;
   border-radius: 1vmin;
+  pointer-events: none;
   
 }
 
@@ -95,14 +96,10 @@
   background-color: white;
   border-radius: 1vmin;
   transition: all 0.3s;
+  pointer-events: none;
 }
 
-.tile {
-  background-color: black;
-  border-radius: 1vmin;
-  transition: all 0.1s ease;
 
-}
 
 .button-container{
   display: flex;
@@ -118,6 +115,13 @@
   
 }
 
+.tile {
+  background-color: black;
+  border-radius: 1vmin;
+  transition: all 0.1s ease;
+  cursor: pointer;
+}
+
 .tile-correct {
   background-color: green;
   border-radius: 1vmin;
@@ -129,6 +133,7 @@
   background-color: rgba(255, 0, 0, 255);
   border-radius: 1vmin;
   transition: all 1s ease;
+  cursor: pointer;
 }
 
 .gameover-container {
@@ -163,4 +168,19 @@
 .retry:hover {
   font-weight: 600;
   transform: translateY(-5px); 
+}
+
+.tail {
+  background-color: #252525;
+  height: 10vmin;
+  display : flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.developer {
+  color : white;
+  font-size: 2em;
+  text-align: right;
+  padding-right: 2em;
 }
