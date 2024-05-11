@@ -1,38 +1,166 @@
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  text-align: center;
+  background-color: #282c34;
+}
+
+.title {
+  width : fit-content;
+  height: auto;
+  cursor: pointer;
+  
+}
+
+.title-box {
+  padding: 50px 0px 0px 0px;
+  height: 100px;
+  width: 100%;
+  font-size: 50px;
+
   color: white;
+  background-color: #282c34;
+  
+  display: flex;
+  justify-content: center;
+  
+  
+}
+
+.info-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  background-color: #252525;
+
+  color : white;
+  
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.score-box {
+  font-weight: 500;
+}
+
+.life-box {
+  font-weight: 500;
 }
 
 .App-link {
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.game-box {
+
+  
+  display: flex;
+  justify-content: center;
+}
+
+.game {
+  background-color: black;
+  color:white;
+
+  display: flex;
+  justify-content: center;
+}
+
+.gamestate-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.start-button {
+  font-size: 50px;
+  background-color: rgba(0, 0, 0, 0);
+  color: white;
+  border: none;
+  transition: all 0.1s ease; /* 애니메이션 효과를 부드럽게 하기 위해 transition을 추가합니다 */
+}
+
+.start-button:hover {
+  transform: translateY(-5px); /* Y축 방향으로 -10px만큼 이동하여 버튼이 위로 올라가는 효과를 줍니다 */
+  box-shadow: 0 0.5em 0.5em -0.4em  #ffffff;
+}
+
+.tile-black {
+  background-color: black;
+  border-radius: 1vmin;
+  
+}
+
+.tile-white {
+  background-color: white;
+  border-radius: 1vmin;
+  transition: all 0.3s;
+}
+
+.tile {
+  background-color: black;
+  border-radius: 1vmin;
+  transition: all 0.1s ease;
+
+}
+
+.button-container{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  
+}
+
+.tile-correct {
+  background-color: green;
+  border-radius: 1vmin;
+  transition: all 1s ease;
+  pointer-events: none;
+}
+
+.tile-wrong {
+  background-color: rgba(255, 0, 0, 255);
+  border-radius: 1vmin;
+  transition: all 1s ease;
+}
+
+.gameover-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.gameover {
+  font-size: 50px;
+  color: white;
+  border: none;
+  pointer-events: none;
+}
+
+.score {
+  font-size: 50px;
+  color: white;
+  border: none;
+  pointer-events: none;
+}
+
+.retry {
+  font-size: 50px;
+  background-color: black;
+  color: white;
+  border: none;
+  transition:all 0.1s;
+  cursor: pointer;
+}
+
+.retry:hover {
+  font-weight: 600;
+  transform: translateY(-5px); 
 }
