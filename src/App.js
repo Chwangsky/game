@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import buttonOpenSound from './audio/button-open.mp3';
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
 
 
   //          variable: 각 스테이지의 정보. N과 M은 반드시 동일해야함!!          //
-  const stages = [
+  const stages = useMemo(() => [
     null,
     // LEVEL 1~
     {N: 5, M: 5, L: 9, time : 3000},
@@ -66,7 +66,7 @@ function App() {
     {N: 15, M: 15, L: 51, time: 5500},
     {N: 15, M: 15, L: 53, time: 5000},
     {N: 15, M: 15, L: 55, time: 4500}
-  ];
+  ], []); 
 
   //          function: 페이지 제목을 클릭한 경우 핸들러          //
   const onTitleClickHandler = () => {
@@ -142,7 +142,7 @@ function App() {
     setAnswer(findPath(stages[level].N, stages[level].M, stages[level].L));
     setTileSize((gameWidth - tileGapSize * (stages[level].N + 1)) / stages[level].N);
     setTileDisplay(Array(stages[level].N).fill().map(() => Array(stages[level].M).fill('tile-black')));
-  }, [level]);
+  }, [level, stages]);
 
 
   useEffect(() => {
@@ -198,7 +198,7 @@ function App() {
     return () => {
       clearTimeout(timerId); // 컴포넌트 언마운트 또는 useEffect 재실행 전에 타이머 정리
     };
-  }, [gameState])
+  }, [gameState, level, stages])
 
   //          state: 몇번째 타일을 클릭하였는지 나타내는 상태          //
   const [currentTileStep, setCurrentTileStep] = useState(0);
@@ -271,6 +271,10 @@ function App() {
 
   //          state: 드래그를 전역적으로 처리하기 위한 state          //
   useEffect(() => {
+
+    setStartColor(getRandomColor());
+    setEndColor(getRandomColor());
+
     // 마우스를 뗄 때 호출할 함수
     const handleMouseUpGlobal = () => {
       setIsDragging(false);
@@ -278,7 +282,7 @@ function App() {
   
     // 전역 이벤트 리스너 등록
     window.addEventListener('mouseup', handleMouseUpGlobal);
-  
+
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
       window.removeEventListener('mouseup', handleMouseUpGlobal);
@@ -321,11 +325,6 @@ function App() {
   const [startColor, setStartColor] = useState({ r: 255, g: 255, b: 255 });
   const [endColor, setEndColor] = useState({ r: 173, g: 216, b: 230 });
 
-  useEffect(() => {
-    // 컴포넌트가 마운트될 때 랜덤 색상을 생성
-    setStartColor(getRandomColor());
-    setEndColor(getRandomColor());
-  }, []);
 
   const getRandomColor = () => {
     const r = Math.floor(Math.random() * 256);
