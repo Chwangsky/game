@@ -1,3 +1,7 @@
+
+play: https://stairofmemory.netlify.app/
+
+
 react 연습용 토이프로젝트인, 기억의 계단 게임입니다.
 
 
