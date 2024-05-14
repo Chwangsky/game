@@ -1,6 +1,7 @@
 import './App.css';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import buttonOpenSound from './audio/button-open.mp3';
+import { Helmet } from 'react-helmet';
 
 function App() {
 
@@ -15,57 +16,81 @@ function App() {
   const [answer, setAnswer] = useState([[0, 0], [0, 0]]);
   const [answerPath, setAnswerPath] = useState([]);
 
-
   //          variable: 각 스테이지의 정보. N과 M은 반드시 동일해야함!!          //
   const stages = useMemo(() => [
     null,
     // LEVEL 1~
+    
     {N: 5, M: 5, L: 9, time : 3000},
-    {N: 5, M: 5, L: 11, time: 3000},
-    {N: 5, M: 5, L: 13, time: 3200},
-    {N: 6, M: 6, L: 15, time: 3400},
-    {N: 6, M: 6, L: 17, time: 3600},
-    {N: 6, M: 6, L: 19, time: 3800},
-    {N: 6, M: 6, L: 21, time: 4000},
-    {N: 6, M: 6, L: 23, time: 4200},
-    {N: 7, M: 7, L: 25, time: 4400},
-    {N: 7, M: 7, L: 27, time: 4600},
+    {N: 5, M: 5, L: 11, time: 3200},
+    {N: 5, M: 5, L: 13, time: 3400},
+    {N: 6, M: 6, L: 15, time: 3600},
+    {N: 6, M: 6, L: 17, time: 3800},
+    {N: 6, M: 6, L: 19, time: 4000},
+    {N: 6, M: 6, L: 21, time: 4200},
+    {N: 7, M: 7, L: 23, time: 4400},
+    {N: 7, M: 7, L: 25, time: 4600},
+    {N: 7, M: 7, L: 27, time: 4800},
     // LEVEL 11~
-    {N: 7, M: 7, L: 29, time: 4800},
-    {N: 7, M: 7, L: 31, time: 5000},
-    {N: 8, M: 8, L: 29, time: 5000},
-    {N: 8, M: 8, L: 31, time: 5100},
-    {N: 8, M: 8, L: 33, time: 5200},
-    {N: 8, M: 8, L: 35, time: 5400},
-    {N: 8, M: 8, L: 37, time: 5600},
-    {N: 9, M: 9, L: 39, time: 5800},
-    {N: 9, M: 9, L: 41, time: 6000},
-    {N: 9, M: 9, L: 43, time: 6200},
+    // LEVEL 11 부터는 급격하게 어려워져서 추가시간을 더 줌.
+    {N: 7, M: 7, L: 29, time: 5000},
+    {N: 8, M: 8, L: 31, time: 5300},
+    {N: 8, M: 8, L: 33, time: 5600},
+    {N: 8, M: 8, L: 35, time: 5900},
+    {N: 8, M: 8, L: 37, time: 6200},
+    {N: 9, M: 9, L: 39, time: 6500},
+    {N: 9, M: 9, L: 41, time: 6800},
+    {N: 9, M: 9, L: 43, time: 7100},
+    {N: 9, M: 9, L: 45, time: 7400},
+    {N: 10, M: 10, L: 47, time: 7700},
     // LEVEL 21~
-    {N: 10, M: 10, L: 45, time: 6400},
-    {N: 10, M: 10, L: 47, time: 6600},
-    {N: 10, M: 10, L: 49, time: 6800},
-    {N: 11, M: 11, L: 51, time: 7000},
-    {N: 11, M: 11, L: 53, time: 7200},
-    {N: 11, M: 11, L: 55, time: 7400},
-    {N: 11, M: 11, L: 53, time: 7600},
-    {N: 12, M: 12, L: 55, time: 7800},
-    {N: 12, M: 12, L: 57, time: 8000},
-    {N: 12, M: 12, L: 59, time: 8200},
+    {N: 10, M: 10, L: 49, time: 8000},
+    {N: 10, M: 10, L: 51, time: 8300},
+    {N: 10, M: 10, L: 53, time: 8600},
+    {N: 11, M: 11, L: 55, time: 8900},
+    {N: 11, M: 11, L: 57, time: 9200},
+    {N: 11, M: 11, L: 59, time: 9500},
+    {N: 11, M: 11, L: 61, time: 9700},
+    {N: 11, M: 11, L: 63, time: 9900},
+    {N: 12, M: 12, L: 65, time: 10200},
+    {N: 12, M: 12, L: 67, time: 10500},
     // LEVEL 31~
-    {N: 13, M: 13, L: 59, time: 8400},
-    {N: 13, M: 13, L: 57, time: 8200},
-    {N: 13, M: 13, L: 55, time: 8000},
-    {N: 14, M: 14, L: 51, time: 9000},
-    {N: 14, M: 14, L: 51, time: 8500},
-    {N: 14, M: 14, L: 51, time: 8000},
-    {N: 14, M: 14, L: 51, time: 7500},
-    {N: 14, M: 14, L: 51, time: 7000},
-    {N: 14, M: 14, L: 51, time: 6500},
-    {N: 14, M: 14, L: 51, time: 6000},
-    {N: 15, M: 15, L: 51, time: 5500},
-    {N: 15, M: 15, L: 53, time: 5000},
-    {N: 15, M: 15, L: 55, time: 4500}
+    {N: 12, M: 12, L: 69, time: 10800},
+    {N: 12, M: 12, L: 71, time: 11100},
+    {N: 12, M: 12, L: 73, time: 11400},
+    {N: 12, M: 12, L: 75, time: 11700},
+    {N: 13, M: 13, L: 77, time: 12000},
+    {N: 13, M: 13, L: 79, time: 12300},
+    {N: 13, M: 13, L: 81, time: 12600},
+    {N: 13, M: 13, L: 83, time: 12900},
+    {N: 13, M: 13, L: 85, time: 13200},
+    {N: 13, M: 13, L: 87, time: 13500},
+    // LEVEL 41~
+    {N: 14, M: 14, L: 89, time: 13800},
+    {N: 14, M: 14, L: 91, time: 14100},
+    {N: 14, M: 14, L: 93, time: 14400},
+    {N: 14, M: 14, L: 95, time: 14700},
+    {N: 14, M: 14, L: 97, time: 15000},
+    {N: 15, M: 15, L: 99, time: 15300},
+    {N: 15, M: 15, L: 101, time: 15600},
+    {N: 15, M: 15, L: 103, time: 15900},
+    {N: 15, M: 15, L: 105, time: 16200},
+    {N: 15, M: 15, L: 107, time: 16500},
+    // LEVEL 51~ (from this level, it is impossible to clear without hack)
+    {N: 50, M: 50, L: 301, time: 5000},
+    {N: 50, M: 50, L: 351, time: 5000},
+    {N: 50, M: 50, L: 401, time: 5000},
+    {N: 50, M: 50, L: 451, time: 5000},
+    {N: 50, M: 50, L: 501, time: 5000},
+    {N: 50, M: 50, L: 551, time: 5000},
+    {N: 50, M: 50, L: 601, time: 5000},
+    {N: 50, M: 50, L: 651, time: 5000},
+    {N: 50, M: 50, L: 701, time: 5000},
+    {N: 50, M: 50, L: 751, time: 5000},
+    // LEVEL 61~
+    {N: 50, M: 50, L: 801, time: 5000},
+    {N: 50, M: 50, L: 851, time: 5000} //
+
   ], []); 
 
   //          function: 페이지 제목을 클릭한 경우 핸들러          //
@@ -73,20 +98,35 @@ function App() {
     window.location.href = '/';
   }
 
+  //          function: 가로 길이 N, 세로 길이 M인 2차원 배열에서 (0, 0), (N-1, M-1)까지 가는 경로들 중 길이가 L인 Path를 2차원 경로로 출력 //
+  // 주어진 경로에서 출발지, 목적지까지 가는데 정확히 길이 L이면서 특정조건을 만족하는 랜덤한 경로를 도출해내는 알고리즘은 NP-complete이다.
+  // 아래 알고리즘은 만약 반복하는 횟수가 일정 횟수(여기서는 L * L으로 구현)가 넘어간다면, 처음부터 다시 탐색한다.
+  
+  //
+  // 알고리즘 테스트 결과
+  // N:9, M:9, L:55(N=9, M=9일 때, L이 가질 수 있는 최대값)일 때, 1000번정도의 재탐색이 일어난다(1~2초 소요)
+  // N:11, M:11, L:77(N=11, M=11일 때, L이 가질 수 있는 최대값)일 때, 1000번정도의 재탐색이 일어난다(3초 소요)
+  // N:50, M:50, L:801정도일떄 35번정도 재탐색이 일어나고(1~2초 소요), 그 이상을 넘어가면 탐색시간이 기하급수적으로 증가한다.
+  // N:100, M:100, L:1001정도인 경우 30번 정도의 재탐색이 일어난다.
+  //
 
-  //          function: 가로 길이 N, 세로 길이 M인 2차원 배열에서 (0, 0), (N-1, M-1)까지 가는 경로들 중 길이가 L인 Path를 2차원 경로로 출력 // 
   const findPath = (N, M, L) => {
     let grid = Array.from({ length: N }, () => Array.from({ length: M }, () => 0));
     let found = false;
     let dy = [0, 0, 1, -1];
     let dx = [1, -1, 0, 0];
     let path = [];
+    let attemptCount = 0;
+    const attemptLimit = L * L + 10000; // heuristic;
 
     function randomDirection() {
         return Math.floor(Math.random() * 4);  // 0, 1, 2, 3 중 하나를 반환
     }
     
     function backtrack(x, y, pathLength, path) {
+        if(attemptCount >= attemptLimit) {
+          return false;
+        }
         if (found) return false;
         if (x >= N || x < 0 || y >= M || y < 0 || grid[x][y] === 1) return false;
         if (pathLength > L) return false;
@@ -97,12 +137,18 @@ function App() {
         if (x > 0 && y > 0 && grid[x-1][y] === 1 && grid[x][y-1] === 1 && grid[x-1][y-1] === 1) return false;
         if (x > 0 && y < M - 1 && grid[x-1][y] === 1 && grid[x][y+1] === 1 && grid[x-1][y+1] === 1) return false;
 
+        attemptCount++;
+
         grid[x][y] = 1;
         path.push([x, y]);
 
-        if (x === N-1 && y === M-1 && pathLength === L) {
-            found = true;
+        if (pathLength === L) {
+          if (x === N-1 && y === M-1) {
             return true;
+          } else {
+            
+            return false;
+          }
         }
 
         let randomIndex = randomDirection();
@@ -119,11 +165,19 @@ function App() {
         path.pop();
         return false;
     }
-  
-    if (!backtrack(0, 0, 1, path)) {
-        return null;
+
+    while(true) {
+      path = [];
+      grid = Array.from({ length: N }, () => Array.from({ length: M }, () => 0));
+      attemptCount = 0;
+      let found = backtrack(0, 0, 1, path);
+      if (found === true) {
+        setAnswerPath(path);
+        break;
+      } else {
+        continue;
+      }
     }
-    setAnswerPath(path);
 
     return grid;
   }
@@ -146,7 +200,6 @@ function App() {
     setStartColor(getRandomColor());
     setEndColor(getRandomColor());
   }, [level, stages]);
-
 
   useEffect(() => {
     if (gameState === 'tile-visible') {
@@ -189,7 +242,6 @@ function App() {
     }
   }, [gameState, answerPath]);
 
-
   useEffect(() => {
 
     let timerId; // 타이머 ID를 저장할 변수
@@ -230,11 +282,27 @@ function App() {
 
   }
 
-  //          state: 상태로 마지막 드래그된 타일의 위치를 저장          //
+  //          state: 마지막으로 성 타일의 위치를 저장          //
   const [lastDraggedTile, setLastDraggedTile] = useState(null);
 
+  //          state: 이번 스텝에서 오답을 낸 경우, 오답을 낸 타일의 위치를 저장          //
+  const [wrongTilesInThisStep, setWrongTilesInThisStep] = useState([])
+
+  //          function : 한 array안에 다른 array가 포함되고 있는지 여부를 확인하기 위해 쓰는 함수          //
+  // 예컨대 arr 배열 안에 target이 포함되었는지 여부를 확인하기 위해서,
+  // const containsTarget = arr.some(subArray => arraysEqual(subArray, target)); // true or false
+  // 와 같이 써줄 수 있음.
+
+  const isArrayEqual = (a, b) => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
   //          function: 타일을 클릭한 경우 핸들러          //
-  const onTileClickHandler = (x, y) => {
+  const onTileClickHandler = useCallback((x, y) => {
 
     // 동일타일 클릭시 리턴
     if (lastDraggedTile !== null && x === lastDraggedTile[0] && y === lastDraggedTile[1]) {
@@ -253,6 +321,9 @@ function App() {
       }
     }
 
+    // 이미 이번 스탭에서 틀린 타일을 한번 더 클릭한 경우 바로 리턴
+    if (wrongTilesInThisStep.some(subArray => isArrayEqual(subArray, [x, y]))) return;
+
     const currentKey = `${x}-${y}`;
   
     if (answerPath[currentTileStep][0] === y && answerPath[currentTileStep][1] === x) {
@@ -260,7 +331,10 @@ function App() {
       setTileStatus(prev => new Map(prev).set(currentKey, 'correct'));
   
       setCurrentTileStep(currentTileStep + 1);
+
       setLastDraggedTile([x, y]);
+
+      setWrongTilesInThisStep([]); //
 
       // 모든 타일을 맞췄다면
       if (currentTileStep + 1 === stages[level].L) {
@@ -275,14 +349,13 @@ function App() {
     } else {
       setTileStatus(prev => new Map(prev).set(currentKey, 'wrong'));
       setLife(prev => prev - 1); // 생명 감소
-      if (life > 1) {
-        
-      } else {
+      setWrongTilesInThisStep(prev => [...prev, [x, y]]);
+      
+      if (life <= 1) {
         setGameState('gameover');
       }
-      
     }
-  };
+  }, [currentTileStep, lastDraggedTile, life, answerPath, level, stages, wrongTilesInThisStep]);
 
 
   //          state: 드래그 및 터치를 전역적으로 처리하기 위한 state          //
@@ -292,16 +365,28 @@ function App() {
       setIsDragging(false);
     };
 
+    const handleTouchMove = (e) => {
+      const touch = e.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+      if (element && element.dataset.x && element.dataset.y) {
+        const x = parseInt(element.dataset.x, 10); // data-x 값을 정수로 변환
+        const y = parseInt(element.dataset.y, 10); // data-y 값을 정수로 변환
+        onTileClickHandler(x, y);
+      }
+    };
+    
+
     // 전역 이벤트 리스너 등록
     window.addEventListener('mouseup', handleMouseUpGlobal);
-    window.addEventListener('touchend', handleMouseUpGlobal);
+    window.addEventListener('touchmove', handleTouchMove);
 
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
       window.removeEventListener('mouseup', handleMouseUpGlobal);
-      window.removeEventListener('touchend', handleMouseUpGlobal);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, []);
+  }, [onTileClickHandler]);
   
 
   //          state: 드래그를 처리하기 위한 state          //
@@ -325,62 +410,18 @@ function App() {
     }
   };
 
-  // 타일 인덱스를 계산하는 함수
-  const calculateTileIndex = (touchX, touchY, tileSize, gameOffset) => {
-    const xIndex = Math.floor((touchX - gameOffset.left) / tileSize);
-    const yIndex = Math.floor((touchY - gameOffset.top) / tileSize);
-    return { x: xIndex, y: yIndex };
-  };
-
-
-
-  //          function: 터치한 후 움직인 경우 처리함수          //
-  const onTouchMoveHandler = (e) => {
-    e.preventDefault(); // 스크롤 방지
-    if (isDragging) {
-      const touch = e.touches[0];
-      const tileSize = gameWidth / stages[level].N; // or any other way you calculate tile size
-      const gameBox = document.querySelector('.game-box').getBoundingClientRect(); // Get the position of the game container
-  
-      const { x, y } = calculateTileIndex(touch.clientX, touch.clientY, tileSize, gameBox);
-      console.log(`Moving to tile at x: ${x}, y: ${y}`); // Debug to ensure correct coordinates
-      onTileClickHandler(x, y);
-    }
-  };
-  
-  const onTouchStartHandler = (e) => {
-    e.preventDefault(); // 기본 터치 이벤트 방지 (스크롤 등)
-    const touch = e.touches[0];
-    const tileSize = gameWidth / stages[level].N;
-    const gameBox = document.querySelector('.game-box').getBoundingClientRect();
-  
-    const { x, y } = calculateTileIndex(touch.clientX, touch.clientY, tileSize, gameBox);
-    console.log(`Starting touch at x: ${x}, y: ${y}`); // Debugging start position
-    setIsDragging(true);
-    onTileClickHandler(x, y);
-  };
-  
-  const onTouchEndHandler = () => {
-    setIsDragging(false);
-  };
-
-
-
-
   //          function: 리트라이 버튼 클릭 핸들러          //
   const onRetryButtonClickHandler = () => {
     setLevel(1);
     setCurrentTileStep(0);
     setGameState('menu');
     setLife(5); 
-    setAnswer(findPath(stages[1].N, stages[1].M, stages[1].L)); // 1단계에서 재시작 시 같은 경로를 반복해서 보여주는 버그 수정
+    setAnswer(findPath(stages[1].N, stages[1].M, stages[1].L)); // 1단계에서 재시작한 경우 같은 경로를 반복해서 출력하는 것 방지
   }
-
 
   //          state: 시작색과 끝색을 정하기 위한 변수          //
   const [startColor, setStartColor] = useState({ r: 255, g: 255, b: 255 });
   const [endColor, setEndColor] = useState({ r: 173, g: 216, b: 230 });
-
 
   const getRandomColor = () => {
     const r = Math.floor(Math.random() * 256);
@@ -399,9 +440,11 @@ function App() {
     return `rgb(${r}, ${g}, ${b})`;
   }
 
-
   return (
     <div className="App">
+      <Helmet>
+        <title>STAIR OF MEMORY</title>
+      </Helmet>
       <div className='title-box'>
         <div className='title' onClick={onTitleClickHandler}>
           Stair of Memory
@@ -485,12 +528,11 @@ function App() {
                           <button
                             className={tileClass}
                             style={tileStyle}
+                            data-x={x}
+                            data-y={y}
                             onMouseDown={() => onMouseDownHandler(x, y)}
                             onMouseUp={onMouseUpHandler}
                             onMouseEnter={() => onMouseEnterHandler(x, y)}
-                            onTouchStart={(e) => onTouchStartHandler(e)}
-                            onTouchMove={(e) => onTouchMoveHandler(e)}
-                            onTouchEnd={onTouchEndHandler}
                             key={`button-${x}-${y}`}
                           />
                         );
@@ -513,7 +555,6 @@ function App() {
                 </div>
               </div>
             }
-
           </div>
         </div>
       </div>
