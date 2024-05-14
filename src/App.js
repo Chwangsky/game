@@ -384,7 +384,7 @@ function App() {
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
       window.removeEventListener('mouseup', handleMouseUpGlobal);
-      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchmove', handleTouchMove, { passive: false });
     };
   }, [onTileClickHandler]);
   
