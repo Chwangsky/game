@@ -8,8 +8,8 @@ function App() {
   const [level, setLevel] = useState(1);
   const [life, setLife] = useState(5);
 
-  const gameWidth = 90;
-  const gameHeight = 90;
+  const gameWidth = 80;
+  const gameHeight = 80;
   //          variable: 게임의 상태를 표시하기 위한 변수          //
   const [gameState, setGameState] = useState('menu');
 
@@ -384,7 +384,7 @@ function App() {
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
       window.removeEventListener('mouseup', handleMouseUpGlobal);
-      window.removeEventListener('touchmove', handleTouchMove, { passive: false });
+      window.removeEventListener('touchmove', handleTouchMove);
     };
   }, [onTileClickHandler]);
   
@@ -441,13 +441,13 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App" style={{ overscrollBehaviorY: 'contain', height: '100vh', overflowY: 'hidden'}}>
       <Helmet>
         <title>STAIR OF MEMORY</title>
       </Helmet>
       <div className='title-box'>
         <div className='title' onClick={onTitleClickHandler}>
-          Stair of Memory
+          STAIR OF MEMORY
         </div>
       </div>
       <div>
