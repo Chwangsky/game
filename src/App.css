@@ -1,3 +1,11 @@
+/*
+  스크롤 새로고침 방지
+*/
+html, body {
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
 .App {
   display: flex;
   flex-direction: column;
@@ -184,3 +192,4 @@
   text-align: right;
   padding-right: 2em;
 }
+

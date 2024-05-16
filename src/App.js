@@ -189,7 +189,7 @@ function App() {
     return (gameWidth - tileGapSize * (stages[level].N + 1)) / stages[level].N;
   }, [level, stages, gameWidth, tileGapSize]);
 
-  //          state: 타일에 에니메이션을 넣기 위해 각 타일의 표시 상태를 나타내는 state          //
+  //          state: 타일에 점점 불이 들어오는 에니메이션을 넣기 위해 각 타일의 표시 상태를 나타내는 state          //
   const [tileDisplay, setTileDisplay] = useState([]); // 각 타일의 표시 상태를 관리
 
   //          effect: level이 변경될 떄마다 실행되는 함수          //
@@ -201,6 +201,31 @@ function App() {
     setEndColor(getRandomColor());
   }, [level, stages]);
 
+
+
+  //          function: 올바른 타일을 클릭한 경우 타일에 색칠하기 위한 함수          //
+  function getTileColor(step, maxSteps, startColor, endColor) {
+    const ratio = step / maxSteps;
+    const r = Math.round(startColor.r + (endColor.r - startColor.r) * ratio);
+    const g = Math.round(startColor.g + (endColor.g - startColor.g) * ratio);
+    const b = Math.round(startColor.b + (endColor.b - startColor.b) * ratio);
+  
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  //          state: 시작색과 끝색을 정하기 위한 변수          //
+  const [startColor, setStartColor] = useState({ r: 255, g: 255, b: 255 });
+  const [endColor, setEndColor] = useState({ r: 173, g: 216, b: 230 });
+
+  const getRandomColor = () => {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    return { r, g, b };
+  }
+
+
+  //          effect: gameState, answerPath가 변경될 떄마다 실행되는 함수          //
   useEffect(() => {
     if (gameState === 'tile-visible') {
       const audioList = []; // 오디오 객체를 저장할 배열
@@ -240,7 +265,7 @@ function App() {
         });
       };
     }
-  }, [gameState, answerPath]);
+  }, [gameState, answerPath, startColor, endColor]);
 
   useEffect(() => {
 
@@ -279,14 +304,14 @@ function App() {
     setTileDisplay(Array.from({length: stages[level].N}, () =>
       Array(stages[level].M).fill('tile-black')
     ));
-
   }
 
-  //          state: 마지막으로 성 타일의 위치를 저장          //
+  //          state: 마지막으로 성공한 타일의 위치를 저장          //
   const [lastDraggedTile, setLastDraggedTile] = useState(null);
 
   //          state: 이번 스텝에서 오답을 낸 경우, 오답을 낸 타일의 위치를 저장          //
-  const [wrongTilesInThisStep, setWrongTilesInThisStep] = useState([])
+  const [wrongTilesInThisStep, setWrongTilesInThisStep] = useState([]);
+
 
   //          function : 한 array안에 다른 array가 포함되고 있는지 여부를 확인하기 위해 쓰는 함수          //
   // 예컨대 arr 배열 안에 target이 포함되었는지 여부를 확인하기 위해서,
@@ -303,14 +328,10 @@ function App() {
 
   //          function: 타일을 클릭한 경우 핸들러          //
   const onTileClickHandler = useCallback((x, y) => {
-
-    // 동일타일 클릭시 리턴
     if (lastDraggedTile !== null && x === lastDraggedTile[0] && y === lastDraggedTile[1]) {
-      console.log('중복타일클릭');
       return;
     }
-
-    // 게임 규칙상 불가능한 곳을 클릭한 경우
+  
     if (currentTileStep === 0) {
       if (x !== 0 || y !== 0) return;
     } else if (currentTileStep === answerPath.length) {
@@ -320,42 +341,38 @@ function App() {
         return;
       }
     }
-
-    // 이미 이번 스탭에서 틀린 타일을 한번 더 클릭한 경우 바로 리턴
+  
     if (wrongTilesInThisStep.some(subArray => isArrayEqual(subArray, [x, y]))) return;
-
+  
     const currentKey = `${x}-${y}`;
-  
+    
     if (answerPath[currentTileStep][0] === y && answerPath[currentTileStep][1] === x) {
-      // 타일 상태 업데이트
-      setTileStatus(prev => new Map(prev).set(currentKey, 'correct'));
-  
+      const color = getTileColor(currentTileStep, answerPath.length, startColor, endColor);
+      setTileStatus(prev => new Map(prev).set(currentKey, { status: 'correct', color }));
+    
       setCurrentTileStep(currentTileStep + 1);
-
       setLastDraggedTile([x, y]);
-
-      setWrongTilesInThisStep([]); //
-
-      // 모든 타일을 맞췄다면
+      setWrongTilesInThisStep([]);
+  
       if (currentTileStep + 1 === stages[level].L) {
-        setTimeout(() => { // 1초 대기 후 실행
+        setTimeout(() => {
           setLastDraggedTile(null);
-          setLevel(level + 1); // 다음 레벨로 업데이트
-          setCurrentTileStep(0); // 타일 스텝 초기화
-          setGameState('tile-visible'); // 게임 상태를 'tile-visible'로 설정
-          setTileStatus(new Map()); // 타일 상태 초기화
-        }, 1000); // 1초 대기
+          setLevel(level + 1);
+          setCurrentTileStep(0);
+          setGameState('tile-visible');
+          setTileStatus(new Map());
+        }, 1000);
       }
     } else {
-      setTileStatus(prev => new Map(prev).set(currentKey, 'wrong'));
-      setLife(prev => prev - 1); // 생명 감소
+      setTileStatus(prev => new Map(prev).set(currentKey, { status: 'wrong' }));
+      setLife(prev => prev - 1);
       setWrongTilesInThisStep(prev => [...prev, [x, y]]);
       
       if (life <= 1) {
         setGameState('gameover');
       }
     }
-  }, [currentTileStep, lastDraggedTile, life, answerPath, level, stages, wrongTilesInThisStep]);
+  }, [currentTileStep, lastDraggedTile, life, answerPath, level, stages, wrongTilesInThisStep, startColor, endColor]);
 
 
   //          state: 드래그 및 터치를 전역적으로 처리하기 위한 state          //
@@ -366,6 +383,7 @@ function App() {
     };
 
     const handleTouchMove = (e) => {
+      e.preventDefault();
       const touch = e.touches[0];
       const element = document.elementFromPoint(touch.clientX, touch.clientY);
     
@@ -379,7 +397,7 @@ function App() {
 
     // 전역 이벤트 리스너 등록
     window.addEventListener('mouseup', handleMouseUpGlobal);
-    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     // 컴포넌트가 언마운트되거나 리렌더링되기 전에 이벤트 리스너 제거
     return () => {
@@ -417,27 +435,6 @@ function App() {
     setGameState('menu');
     setLife(5); 
     setAnswer(findPath(stages[1].N, stages[1].M, stages[1].L)); // 1단계에서 재시작한 경우 같은 경로를 반복해서 출력하는 것 방지
-  }
-
-  //          state: 시작색과 끝색을 정하기 위한 변수          //
-  const [startColor, setStartColor] = useState({ r: 255, g: 255, b: 255 });
-  const [endColor, setEndColor] = useState({ r: 173, g: 216, b: 230 });
-
-  const getRandomColor = () => {
-    const r = Math.floor(Math.random() * 256);
-    const g = Math.floor(Math.random() * 256);
-    const b = Math.floor(Math.random() * 256);
-    return { r, g, b };
-  }
-
-  //          function: 타일에 색칠하기 위한 함수          //
-  function getTileColor(step, maxSteps, startColor, endColor) {
-    const ratio = step / maxSteps;
-    const r = Math.round(startColor.r + (endColor.r - startColor.r) * ratio);
-    const g = Math.round(startColor.g + (endColor.g - startColor.g) * ratio);
-    const b = Math.round(startColor.b + (endColor.b - startColor.b) * ratio);
-  
-    return `rgb(${r}, ${g}, ${b})`;
   }
 
   return (
@@ -495,51 +492,47 @@ function App() {
             }
             {gameState === 'tile-invisible' && 
               <div className='button-container' style={{gap: `${tileGapSize}vmin`}}>
-                {
-                answer.map((buttonRow, y) => {
-                  return (
-                    <div className='button-row' key={`row-${y}`}>
-                      {buttonRow.map((button, x) => {
-                        const currentKey = `${x}-${y}`;
-                        const status = tileStatus.get(currentKey);
-                        let tileClass;
-                        let tileStyle = {
-                          width: `${tileSize}vmin`,
-                          height: `${tileSize}vmin`,
-                          gap: `${tileGapSize}vmin`
-                        };
-                
-                        switch (status) {
-                          case 'correct':
-                            tileClass = `tile-correct`;
-                            tileStyle = {
-                              ...tileStyle,
-                              backgroundColor: getTileColor(currentTileStep, answerPath.length, startColor, endColor)
-                            };
-                            break;
-                          case 'wrong':
-                            tileClass = 'tile-wrong';
-                            break;
-                          default:
-                            tileClass = 'tile';
-                            break;
-                        }
-                        return (
-                          <button
-                            className={tileClass}
-                            style={tileStyle}
-                            data-x={x}
-                            data-y={y}
-                            onMouseDown={() => onMouseDownHandler(x, y)}
-                            onMouseUp={onMouseUpHandler}
-                            onMouseEnter={() => onMouseEnterHandler(x, y)}
-                            key={`button-${x}-${y}`}
-                          />
-                        );
-                      })}
-                    </div>)
-                })
-                }
+                {answer.map((buttonRow, y) => (
+                  <div className='button-row' key={`row-${y}`}>
+                    {buttonRow.map((button, x) => {
+                      const currentKey = `${x}-${y}`;
+                      const tileInfo = tileStatus.get(currentKey) || {};
+                      const { status, color } = tileInfo;
+                      let tileClass = 'tile';
+                      let tileStyle = {
+                        width: `${tileSize}vmin`,
+                        height: `${tileSize}vmin`,
+                        gap: `${tileGapSize}vmin`,
+                        backgroundColor: status === 'correct' ? color : undefined
+                      };
+
+                      switch (status) {
+                        case 'correct':
+                          tileClass = 'tile-correct';
+                          break;
+                        case 'wrong':
+                          tileClass = 'tile-wrong';
+                          break;
+                        default:
+                          tileClass = 'tile';
+                          break;
+                      }
+
+                      return (
+                        <button
+                          className={tileClass}
+                          style={tileStyle}
+                          data-x={x}
+                          data-y={y}
+                          onMouseDown={() => onMouseDownHandler(x, y)}
+                          onMouseUp={onMouseUpHandler}
+                          onMouseEnter={() => onMouseEnterHandler(x, y)}
+                          key={`button-${x}-${y}`}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             }
             {gameState === 'gameover' && 
@@ -556,11 +549,6 @@ function App() {
               </div>
             }
           </div>
-        </div>
-      </div>
-      <div className='tail'>
-        <div className='developer'>
-          dev. 0woo
         </div>
       </div>
     </div>
